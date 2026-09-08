@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@ecommerce/types": ["../../packages/types/src"],
+      "@ecommerce/validation": ["../../packages/validation/src"],
+      "@ecommerce/ui": ["../../packages/ui/src"],
+      "@ecommerce/config": ["../../packages/config/src"],
+    }
+  },
+  "include": ["src/**/*", "vite-env.d.ts"]
+}

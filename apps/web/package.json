@@ -1,0 +1,32 @@
+{
+  "name": "@ecommerce/web",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --ext .ts,.tsx",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ecommerce/types": "workspace:*",
+    "@ecommerce/validation": "workspace:*",
+    "@ecommerce/ui": "workspace:*",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^7.0.0",
+    "@tanstack/react-query": "^5.56.0",
+    "zustand": "^4.5.5",
+    "react-helmet-async": "^2.0.0"
+  },
+  "devDependencies": {
+    "vite": "^5.4.0",
+    "typescript": "^5.7.2",
+    "tailwindcss": "^3.4.0",
+    "@vitejs/plugin-react": "^4.3.0",
+    "eslint": "^9.0.0",
+    "vitest": "^2.1.0"
+  }
+}
