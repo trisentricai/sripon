@@ -155,9 +155,11 @@ SUCCESS (idempotent) and flips the order to PAID, all in one transaction.
 | GET | `/admin/analytics/` | ANALYST+ | Revenue/orders charts with `?from=&to=&group_by=day` |
 | GET/POST | `/admin/products/` | PRODUCT_MGR+ | List/create |
 | GET/PATCH/DELETE | `/admin/products/{id}/` | PRODUCT_MGR+ | Detail/update/deactivate |
-| POST | `/admin/products/{id}/images/` | PRODUCT_MGR+ | Upload image(s) → Cloudinary |
+| POST | `/admin/products/{id}/images/` | PRODUCT_MGR+ | Upload image(s) → Cloudinary (`image` or `images[]`) |
+| GET | `/admin/products/{id}/images/` | PRODUCT_MGR+ | List a product's images |
 | DELETE | `/admin/products/{id}/images/{image_id}/` | PRODUCT_MGR+ | Remove image (+ Cloudinary) |
-| POST | `/admin/products/{id}/images/reorder/` | PRODUCT_MGR+ | `{[image_id, sort_order]}` |
+| POST | `/admin/products/{id}/images/reorder/` | PRODUCT_MGR+ | `{items: [{id, sort_order}]}` |
+| POST | `/admin/products/{id}/images/{image_id}/primary/` | PRODUCT_MGR+ | Make image the primary |
 | GET/POST | `/admin/categories/` | PRODUCT_MGR+ | Categories CRUD |
 | PATCH/DELETE | `/admin/categories/{id}/` | PRODUCT_MGR+ | Update/delete |
 | GET/PATCH | `/admin/inventory/` | PRODUCT_MGR+ | Stock levels, low stock |

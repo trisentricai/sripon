@@ -110,3 +110,19 @@ class ProductSuggestionSerializer(serializers.ModelSerializer):
 
     def get_primary_image(self, obj):
         return primary_image_payload(obj)
+
+
+class ProductImageUploadSerializer(serializers.Serializer):
+    image = serializers.ImageField(required=False)
+    alt_text = serializers.CharField(required=False, allow_blank=True, max_length=255)
+    is_primary = serializers.BooleanField(required=False, default=False)
+    sort_order = serializers.IntegerField(required=False, min_value=0)
+
+
+class ProductImageReorderItemSerializer(serializers.Serializer):
+    id = serializers.IntegerField(min_value=1)
+    sort_order = serializers.IntegerField(min_value=0)
+
+
+class ProductImageReorderSerializer(serializers.Serializer):
+    items = ProductImageReorderItemSerializer(many=True, allow_empty=False)
