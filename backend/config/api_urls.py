@@ -40,4 +40,7 @@ urlpatterns = [
     # Admin dashboard, analytics, customers & admin users (Phase 12)
     path("admin/", include("apps.analytics.urls")),
     path("admin/", include("apps.users.admin_api_urls")),
+    # Notifications (Phase 14)
+    path("notifications/", include("apps.notifications.api_urls")),
+    path("admin/notifications/", include("apps.notifications.admin_api_urls")),
 ]
