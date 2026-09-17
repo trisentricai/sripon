@@ -3,6 +3,7 @@ from django.urls import path
 
 from .views import (
     AnalyticsTrendView,
+    CategorySalesView,
     DashboardAggregateView,
     TopCustomersView,
     TopProductsView,
@@ -20,5 +21,10 @@ urlpatterns = [
         "analytics/top-customers/",
         TopCustomersView.as_view(),
         name="admin-analytics-top-customers",
+    ),
+    path(
+        "analytics/category-sales/",
+        CategorySalesView.as_view(),
+        name="admin-analytics-category-sales",
     ),
 ]

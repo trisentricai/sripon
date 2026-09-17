@@ -66,6 +66,7 @@ class AnalyticsApiTests(TestCase):
         stats = response.data["data"]["stats"]
         self.assertEqual(stats["total_orders"], 1)
         self.assertEqual(stats["total_revenue"], "200")
+        self.assertEqual(stats["average_order_value"], "200")
         self.assertEqual(stats["total_customers"], 1)
         self.assertEqual(stats["total_products"], 1)
         self.assertEqual(len(response.data["data"]["sales_trend"]), 14)
@@ -76,9 +77,12 @@ class AnalyticsApiTests(TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.data["data"]
         self.assertEqual(data["days"], 30)
-        self.assertEqual(len(data["trend"]), 30)
-        self.assertEqual(data["trend"][-1]["orders"], 1)
-        self.assertEqual(data["trend"][-1]["revenue"], "200")
+        self.assertEqual(data["granularity"], "day")
+        self.assertEqual(data["summary"]["orders"], 1)
+        self.assertEqual(data["summary"]["revenue"], "200")
+        self.assertEqual(data["summary"]["aov"], "200")
+        self.assertTrue(any(t["orders"] == 1 for t in data["trend"]))
+        self.assertIn("payment_provider_counts", data)
 
     def test_analytics_trend_bad_days_falls_back(self):
         response = self.client.get("/api/v1/admin/analytics/?days=nope")
@@ -88,6 +92,22 @@ class AnalyticsApiTests(TestCase):
     def test_analytics_trend_clamped(self):
         response = self.client.get("/api/v1/admin/analytics/?days=500")
         self.assertEqual(response.data["data"]["days"], 90)
+
+    def test_analytics_trend_date_range(self):
+        response = self.client.get(
+            "/api/v1/admin/analytics/",
+            {"start_date": "2026-09-01", "end_date": "2026-09-17"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["data"]["summary"]["orders"], 1)
+
+    def test_category_sales(self):
+        response = self.client.get("/api/v1/admin/analytics/category-sales/")
+        self.assertEqual(response.status_code, 200)
+        rows = response.data["data"]
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["units"], 2)
+        self.assertEqual(rows[0]["revenue"], "200")
 
     def test_top_products(self):
         response = self.client.get("/api/v1/admin/analytics/top-products/")
