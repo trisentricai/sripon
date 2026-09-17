@@ -11,9 +11,10 @@ app_name = "v1"
 urlpatterns = [
     # Auth (Phase 3)
     path("auth/", include("apps.users.api_urls")),
+    # Public catalogue (Phase 4)
+    path("products/", include("apps.products.api_urls")),
+    path("categories/", include("apps.categories.api_urls")),
     # Cross-domain and admin endpoints appear here as phases ship:
-    # path("products/", include("apps.products.api_urls")),
-    # path("categories/", include("apps.categories.api_urls")),
     # path("banners/", include("apps.banners.api_urls")),
     # path("cart/", include("apps.cart.api_urls")),
     # path("orders/", include("apps.orders.api_urls")),
