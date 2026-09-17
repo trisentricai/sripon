@@ -24,12 +24,10 @@ urlpatterns = [
     # Checkout & orders (Phase 7)
     path("orders/", include("apps.orders.api_urls")),
     path("admin/orders/", include("apps.orders.admin_api_urls")),
+    # Payments (Phase 8)
+    path("payments/", include("apps.payments.api_urls")),
     # Cross-domain and admin endpoints appear here as phases ship:
     # path("banners/", include("apps.banners.api_urls")),
-    # path("cart/", include("apps.cart.api_urls")),
-    # path("orders/", include("apps.orders.api_urls")),
-    # path("coupons/", include("apps.coupons.api_urls")),
-    # path("payments/", include("apps.payments.api_urls")),
     # path("home/", include("apps.settings.api_urls")),
     # path("admin/", include("apps.settings.admin_api_urls")),
 ]

@@ -280,6 +280,12 @@ CLOUDINARY = {
     "FOLDER": os.getenv("CLOUDINARY_FOLDER", "sripon"),
 }
 
+# Payment gateway (Phase 8). Backend-only secrets; selected by PAYMENT_PROVIDER.
+PAYMENT = {
+    "PROVIDER": os.getenv("PAYMENT_PROVIDER", "MOCK"),
+    "MOCK_SECRET": os.getenv("PAYMENT_MOCK_SECRET", "mock-secret-dev"),
+}
+
 # ---------------------------------------------------------------------------
 # Firebase (customer identity) & Supabase (admin identity)
 # ---------------------------------------------------------------------------
