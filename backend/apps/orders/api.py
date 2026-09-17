@@ -12,6 +12,7 @@ from config.pagination import (
     error_response,
     success_response,
 )
+from config.throttles import CheckoutThrottle
 
 from . import services
 from .models import Order
@@ -34,6 +35,12 @@ def order_error(exc):
 
 class OrderCollectionView(CustomerApiView):
     pagination_class = StandardPagination
+
+    def get_throttles(self):
+        # Only order placement (POST) is rate-limited, not the order list.
+        if self.request.method == "POST":
+            return [CheckoutThrottle()]
+        return []
 
     def get(self, request):
         queryset = (

@@ -13,6 +13,9 @@ from apps.users.models import UserProfile
 
 class CouponValidateApiTests(TestCase):
     def setUp(self):
+        from django.core.cache import cache
+
+        cache.clear()
         self.client = APIClient()
         self.customer = UserProfile.objects.create(firebase_uid="cust-1")
 

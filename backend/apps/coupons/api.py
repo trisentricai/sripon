@@ -7,6 +7,7 @@ from rest_framework.views import APIView
 from apps.users.api import CUSTOMER_AUTH
 from apps.users.authentication import IsCustomer
 from config.pagination import error_response, success_response
+from config.throttles import CouponThrottle
 
 from .services import CouponError, evaluate_coupon
 
@@ -17,6 +18,7 @@ class CouponValidateView(APIView):
 
     authentication_classes = CUSTOMER_AUTH
     permission_classes = [IsCustomer]
+    throttle_classes = [CouponThrottle]
 
     def post(self, request):
         code = request.data.get("code")

@@ -7,11 +7,13 @@ from .models import Payment
 from .serializers import MockConfirmSerializer, PaymentSerializer
 from .services import handle_callback, initiate_payment, mock_confirm
 from config.pagination import error_response, success_response
+from config.throttles import PaymentThrottle
 
 
 class PaymentInitiateView(APIView):
     authentication_classes = CUSTOMER_AUTH
     permission_classes = [IsCustomer]
+    throttle_classes = [PaymentThrottle]
 
     def post(self, request, order_number):
         order = request.user.orders.filter(order_number=order_number).first()
@@ -54,6 +56,7 @@ class PaymentWebhookView(APIView):
 class PaymentMockConfirmView(APIView):
     authentication_classes = CUSTOMER_AUTH
     permission_classes = [IsCustomer]
+    throttle_classes = [PaymentThrottle]
 
     def post(self, request):
         serializer = MockConfirmSerializer(data=request.data)

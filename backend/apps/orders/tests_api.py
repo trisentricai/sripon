@@ -15,6 +15,9 @@ from apps.users.models import Address, AdminUser, UserProfile
 
 class CheckoutTestBase(TestCase):
     def setUp(self):
+        from django.core.cache import cache
+
+        cache.clear()
         self.client = APIClient()
         self.customer = UserProfile.objects.create(
             firebase_uid="cust-1", name="Buyer", phone="9999999999"

@@ -28,6 +28,9 @@ def _create_order(customer, total=Decimal("199.99"), status=OrderStatus.PENDING)
 
 class PaymentApiTests(TestCase):
     def setUp(self):
+        from django.core.cache import cache
+
+        cache.clear()
         self.customer = UserProfile.objects.create(
             firebase_uid="pd-1", name="Payer", email="pd1@sripon.in"
         )

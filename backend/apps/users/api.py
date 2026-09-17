@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from config.pagination import success_response
+from config.throttles import LoginThrottle
 
 from .authentication import (
     FirebaseAuthentication,
@@ -33,6 +34,7 @@ class FirebaseAuthView(APIView):
 
     authentication_classes = []
     permission_classes = [permissions.AllowAny]
+    throttle_classes = [LoginThrottle]
 
     def get_authenticate_header(self, request):
         return "Bearer"

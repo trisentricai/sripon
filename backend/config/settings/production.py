@@ -31,6 +31,12 @@ if not os.getenv("DATABASE_URL"):
 
 # ---- Security hardening -----------------------------------------------------
 SECURE_SSL_REDIRECT = env_bool("SECURE_SSL_REDIRECT", True)
+
+# Expose JSON only in production; disable the browsable API and any debug
+# renderer that could leak schema forms or internal detail.
+REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"] = [
+    "rest_framework.renderers.JSONRenderer",
+]
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True

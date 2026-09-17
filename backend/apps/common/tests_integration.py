@@ -60,6 +60,9 @@ class CriticalCustomerFlowTests(TestCase):
             cls.products[product.slug] = product
 
     def setUp(self):
+        from django.core.cache import cache
+
+        cache.clear()
         self.client = APIClient()
         # Customer "logs in" via a verified Firebase identity (firebase token
         # exchange is covered separately in users tests; here we act as the

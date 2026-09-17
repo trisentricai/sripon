@@ -202,7 +202,9 @@ REST_FRAMEWORK = {
         "anon": os.getenv("THROTTLE_ANON", "100/min"),
         "user": os.getenv("THROTTLE_USER", "300/min"),
         "login": os.getenv("THROTTLE_LOGIN", "10/min"),
+        "coupon": os.getenv("THROTTLE_COUPON", "20/min"),
         "checkout": os.getenv("THROTTLE_CHECKOUT", "10/min"),
+        "payment": os.getenv("THROTTLE_PAYMENT", "10/min"),
     },
     "EXCEPTION_HANDLER": "config.exceptions.api_exception_handler",
 }
