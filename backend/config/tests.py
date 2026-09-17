@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 import dj_database_url
 from django.conf import settings
-from django.test import SimpleTestCase
+from django.test import SimpleTestCase, TestCase
 
 from config.settings.base import env_bool, env_list
 
@@ -48,3 +48,60 @@ class EnvHelperTests(SimpleTestCase):
         ):
             self.assertEqual(env_list("SP_TEST_LIST"), ["a", "b", "c"])
         self.assertEqual(env_list("SP_TEST_EMPTY", "default"), ["default"])
+
+
+class DeploymentReadinessTests(TestCase):
+    """Verifies the surfaces Render relies on: health probe, API schema, seed cmd."""
+
+    def test_health_endpoint_returns_ok(self):
+        from django.test import Client
+
+        response = Client().get("/health/")
+        self.assertEqual(response.status_code, 200)
+
+    def test_openapi_schema_generates(self):
+        from django.test import Client
+
+        response = Client().get("/api/schema/")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("openapi", response.data)
+
+    def test_api_docs_are_served(self):
+        from django.test import Client
+
+        self.assertEqual(Client().get("/api/docs/").status_code, 200)
+
+    def test_seed_superadmin_creates_admin(self):
+        from io import StringIO
+
+        from django.core.management import call_command
+
+        from apps.users.models import AdminUser
+
+        out = StringIO()
+        call_command(
+            "seed_superadmin",
+            "--supabase-uid",
+            "dep-uid-1",
+            "--email",
+            "Ops@SriPon.In",
+            "--name",
+            "Ops",
+            stdout=out,
+        )
+        admin = AdminUser.objects.get(supabase_uid="dep-uid-1")
+        self.assertEqual(admin.email, "ops@sripon.in")
+        self.assertEqual(admin.role, AdminUser.Role.SUPER_ADMIN)
+        self.assertTrue(admin.active)
+
+    def test_seed_superadmin_is_idempotent(self):
+        from io import StringIO
+
+        from django.core.management import call_command
+
+        from apps.users.models import AdminUser
+
+        args = ["--supabase-uid", "dep-uid-2", "--email", "again@sripon.in"]
+        for _ in range(2):
+            call_command("seed_superadmin", *args, stdout=StringIO())
+        self.assertEqual(AdminUser.objects.filter(supabase_uid="dep-uid-2").count(), 1)

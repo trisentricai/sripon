@@ -69,7 +69,10 @@ The private key never ships in the web/mobile bundles.
    - `DATABASE_URL`, `REDIS_URL`, `CORS_ALLOWED_ORIGINS`
    - Firebase, Supabase, Cloudinary and payment variables.
 4. Create the first admin via a one-off shell:
-   `python manage.py seed_superadmin` (created in Phase 3).
+   `python manage.py seed_superadmin --supabase-uid <uid> --email a@x.com`
+   The `<uid>` is the Supabase Auth user id; the command creates (or promotes
+   to) the `SUPER_ADMIN` Django record that matches the Supabase identity. Run
+   from the `backend/` directory.
 
 ### render.yaml (backend web service)
 
