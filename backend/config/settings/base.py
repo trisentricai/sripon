@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "django_filters",
     "drf_spectacular",
     # SriPon apps
+    "apps.common",
     "apps.users",
     "apps.categories",
     "apps.products",
