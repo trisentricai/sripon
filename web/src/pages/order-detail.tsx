@@ -58,6 +58,7 @@ function OrderContent() {
   const [cancelling, setCancelling] = useState(false);
   const [cancelError, setCancelError] = useState<string | null>(null);
   const flash = (location.state as { success?: boolean } | null)?.success;
+  const paymentPending = (location.state as { paymentPending?: boolean } | null)?.paymentPending;
 
   const load = useCallback(async () => {
     if (Number.isNaN(orderId)) {
@@ -130,6 +131,12 @@ function OrderContent() {
       {flash && (
         <div className="mt-5 rounded-btn bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
           Your order was placed successfully. Track it from here.
+        </div>
+      )}
+      {paymentPending && (
+        <div className="mt-5 rounded-btn bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
+          Your order is confirmed but awaiting payment. Complete the payment from your
+          payment provider to confirm it.
         </div>
       )}
       {cancelError && (

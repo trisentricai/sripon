@@ -6,6 +6,7 @@ import { useCart } from "../features/cart/CartProvider";
 import { getAddresses, createAddress } from "../api/addresses";
 import { placeOrder } from "../api/orders";
 import { validateCoupon } from "../api/coupons";
+import { initiatePayment, mockConfirm } from "../api/payments";
 import type { Address, CouponValidation } from "../types/models";
 import Spinner from "../components/ui/Spinner";
 import ErrorBanner from "../components/ui/ErrorBanner";
@@ -127,7 +128,17 @@ function CheckoutContent() {
         coupon_code: appliedCoupon?.code,
       });
       await clearCart();
-      navigate(`/orders/${order.id}`, { state: { success: true } });
+      try {
+        const payment = await initiatePayment(order.order_number);
+        if (payment.provider === "MOCK") {
+          await mockConfirm(payment.payment_id);
+        }
+        navigate(`/orders/${order.id}`, { state: { success: true } });
+      } catch {
+        navigate(`/orders/${order.id}`, {
+          state: { success: true, paymentPending: true },
+        });
+      }
     } catch (err: any) {
       setPlaceError(err?.response?.data?.message || toApiError(err).message);
       setPlacing(false);
