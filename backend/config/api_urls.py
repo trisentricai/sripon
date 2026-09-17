@@ -9,8 +9,9 @@ from django.urls import include, path
 app_name = "v1"
 
 urlpatterns = [
+    # Auth (Phase 3)
+    path("auth/", include("apps.users.api_urls")),
     # Cross-domain and admin endpoints appear here as phases ship:
-    # path("auth/", include("apps.users.api_urls")),
     # path("products/", include("apps.products.api_urls")),
     # path("categories/", include("apps.categories.api_urls")),
     # path("banners/", include("apps.banners.api_urls")),

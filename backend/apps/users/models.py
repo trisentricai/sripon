@@ -74,5 +74,40 @@ class Address(TimeStampedModel):
     class Meta:
         ordering = ["-is_default", "-updated_at"]
 
+    def save(self, *args, **kwargs):
+        if self.is_default:
+            Address.objects.filter(
+                customer_id=self.customer_id, is_default=True
+            ).exclude(pk=self.pk).update(is_default=False)
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"{self.full_name} - {self.address_line_1}, {self.city} {self.pincode}"
+
+
+class DeviceToken(models.Model):
+    """Push-notification token for a customer's mobile/web app."""
+
+    class Platform(models.TextChoices):
+        ANDROID = "ANDROID", "Android"
+        IOS = "IOS", "iOS"
+        WEB = "WEB", "Web"
+
+    customer = models.ForeignKey(
+        UserProfile,
+        on_delete=models.CASCADE,
+        related_name="device_tokens",
+    )
+    token = models.CharField(max_length=256, unique=True)
+    platform = models.CharField(
+        max_length=20,
+        choices=Platform.choices,
+        default=Platform.ANDROID,
+    )
+    app_version = models.CharField(max_length=50, blank=True)
+    active = models.BooleanField(default=True)
+    last_seen_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.platform} token for {self.customer}"

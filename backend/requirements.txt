@@ -12,4 +12,5 @@ celery~=5.6.0
 cloudinary~=1.46.0
 firebase-admin~=7.5.0
 supabase~=2.31.0
+PyJWT~=2.10.0
 drf-spectacular~=0.30.0

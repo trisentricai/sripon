@@ -183,9 +183,8 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         # Session auth is useful for browsable API / Django admin testing.
         "rest_framework.authentication.SessionAuthentication",
-        # Customer + admin JWT verification is added in Phase 3.
-        # "apps.users.authentication.FirebaseAuthentication",
-        # "apps.users.authentication.SupabaseAuthentication",
+        # Routes bearer tokens to Firebase (customer) or Supabase (admin).
+        "apps.users.authentication.SriPonApiAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticatedOrReadOnly",
@@ -297,6 +296,7 @@ SUPABASE = {
     "ANON_KEY": os.getenv("SUPABASE_ANON_KEY", ""),
     "SERVICE_ROLE_KEY": os.getenv("SUPABASE_SERVICE_ROLE_KEY", ""),
     "JWT_SECRET": os.getenv("SUPABASE_JWT_SECRET", ""),
+    "JWT_AUDIENCE": os.getenv("SUPABASE_JWT_AUDIENCE", "authenticated"),
 }
 
 # ---------------------------------------------------------------------------

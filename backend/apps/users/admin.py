@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Address, AdminUser, UserProfile
+from .models import Address, AdminUser, DeviceToken, UserProfile
 
 
 @admin.register(UserProfile)
@@ -25,3 +25,11 @@ class AddressAdmin(admin.ModelAdmin):
     list_filter = ("state",)
     search_fields = ("full_name", "phone", "pincode", "city", "state")
     raw_id_fields = ("customer",)
+
+
+@admin.register(DeviceToken)
+class DeviceTokenAdmin(admin.ModelAdmin):
+    list_display = ("customer", "platform", "active", "last_seen_at")
+    list_filter = ("platform", "active")
+    search_fields = ("token", "customer__email")
+    readonly_fields = ("created_at", "last_seen_at")

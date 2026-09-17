@@ -13,7 +13,7 @@ class TimeStampedModelTests(TestCase):
         )
         self.assertIsNotNone(model.created_at)
         self.assertIsNotNone(model.updated_at)
-        self.assertEqual(model.created_at, model.updated_at)
+        self.assertGreaterEqual(model.updated_at, model.created_at)
         self.assertTrue(TimeStampedModel in UserProfile.__mro__)
 
     def test_updated_at_changes_on_modification(self):

@@ -32,6 +32,21 @@ Interactive documentation: `GET /api/docs/` (Swagger) and `GET /api/schema/`
 | DELETE | `/auth/addresses/{id}/` | customer | Delete address |
 | POST | `/auth/addresses/{id}/default/` | customer | Set default address |
 
+The Google flow reuses `/auth/firebase/verify/` semantics: Firebase Auth mints
+the ID token for Google sign-in, so `POST /auth/google/` is an alias.
+
+### Admin auth (Supabase)
+
+| Method | Path | Auth | Purpose |
+|---|---|---|---|
+| GET | `/auth/admin/verify/` | admin | Verify the Supabase JWT and return the admin profile + role |
+
+Admins sign in through Supabase; the dashboard sends the resulting JWT as a
+bearer token. Django verifies the signature (HS256, `SUPABASE_JWT_SECRET`) and
+maps the token subject to an `AdminUser`. Accounts are auto-provisioned only
+when the JWT carries a SriPon role claim (`app_metadata.sripon_role` or
+`role`) matching the role list; otherwise access is denied.
+
 ## 3. Products & categories (public)
 
 | Method | Path | Purpose |
