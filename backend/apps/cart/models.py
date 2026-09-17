@@ -37,3 +37,38 @@ class CartItem(models.Model):
 
     def __str__(self):
         return f"{self.product.sku} x {self.quantity}"
+
+
+class Wishlist(TimeStampedModel):
+    """Saved-for-later list; exactly one per customer."""
+
+    customer = models.OneToOneField(
+        UserProfile,
+        on_delete=models.CASCADE,
+        related_name="wishlist",
+    )
+
+    def __str__(self):
+        return f"Wishlist for {self.customer}"
+
+
+class WishlistItem(models.Model):
+    wishlist = models.ForeignKey(
+        Wishlist, on_delete=models.CASCADE, related_name="items"
+    )
+    product = models.ForeignKey(
+        Product, on_delete=models.CASCADE, related_name="wishlist_items"
+    )
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-added_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["wishlist", "product"],
+                name="uniq_wishlist_product",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.product.sku} saved"

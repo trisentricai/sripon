@@ -16,6 +16,9 @@ urlpatterns = [
     path("categories/", include("apps.categories.api_urls")),
     # Admin media, product images (Phase 5)
     path("admin/products/", include("apps.products.admin_api_urls")),
+    # Customer cart & wishlist (Phase 6)
+    path("cart/", include("apps.cart.api_urls")),
+    path("wishlist/", include("apps.cart.wishlist_api_urls")),
     # Cross-domain and admin endpoints appear here as phases ship:
     # path("banners/", include("apps.banners.api_urls")),
     # path("cart/", include("apps.cart.api_urls")),

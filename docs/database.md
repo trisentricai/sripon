@@ -158,6 +158,21 @@ Computed helpers: `available_quantity = stock_quantity - reserved_quantity`,
 | added_at | DateTime | |
 | constraints | unique(cart, product) | |
 
+### apps.cart — `Wishlist`
+| Field | Type | Notes |
+|---|---|---|
+| customer | OneToOne UserProfile | |
+| created_at / updated_at | DateTime | |
+
+### apps.cart — `WishlistItem`
+| Field | Type | Notes |
+|---|---|---|
+| wishlist | FK Wishlist CASCADE | |
+| product | FK Product CASCADE | |
+| added_at | DateTime | |
+| constraints | unique(wishlist, product) | |
+| ordering | -added_at | |
+
 ### apps.orders — `Order`
 | Field | Type | Notes |
 |---|---|---|
