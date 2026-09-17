@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from apps.categories.models import Category
 
-from .models import Product, ProductImage
+from .models import Inventory, InventoryTransaction, Product, ProductImage
 
 
 class CategoryMiniSerializer(serializers.ModelSerializer):
@@ -126,3 +126,126 @@ class ProductImageReorderItemSerializer(serializers.Serializer):
 
 class ProductImageReorderSerializer(serializers.Serializer):
     items = ProductImageReorderItemSerializer(many=True, allow_empty=False)
+
+
+class ProductAdminSerializer(serializers.ModelSerializer):
+    """Write shape for admin product create/update (Phase 12)."""
+
+    category = serializers.PrimaryKeyRelatedField(
+        queryset=Category.objects.all(), required=False, allow_null=True
+    )
+
+    class Meta:
+        model = Product
+        fields = (
+            "category",
+            "sku",
+            "product_code",
+            "name",
+            "slug",
+            "brand",
+            "description",
+            "short_description",
+            "mrp",
+            "price",
+            "discount_price",
+            "tax",
+            "stock_quantity",
+            "minimum_order_quantity",
+            "maximum_order_quantity",
+            "weight",
+            "unit",
+            "specifications",
+            "highlights",
+            "meta",
+            "is_featured",
+            "is_best_seller",
+            "is_new",
+            "is_active",
+        )
+
+    def validate_sku(self, value):
+        value = (value or "").strip().upper()
+        if not value:
+            raise serializers.ValidationError("SKU is required.")
+        return value
+
+    def validate_slug(self, value):
+        value = (value or "").strip().lower()
+        return value
+
+
+class ProductAdminDetailSerializer(ProductDetailSerializer):
+    """Read shape for admin product detail (Phase 12).
+
+    Adds operational stock/reserved figures to the public shape.
+    """
+
+    class Meta(ProductDetailSerializer.Meta):
+        fields = ProductDetailSerializer.Meta.fields + (
+            "reserved_quantity",
+            "stock_quantity",
+            "is_active",
+        )
+
+
+class InventorySerializer(serializers.ModelSerializer):
+    """Operational stock view for the admin inventory screen."""
+
+    product_name = serializers.CharField(source="product.name", read_only=True)
+    product_sku = serializers.CharField(source="product.sku", read_only=True)
+    available_quantity = serializers.IntegerField(read_only=True)
+    is_low_stock = serializers.BooleanField(read_only=True)
+    is_out_of_stock = serializers.BooleanField(read_only=True)
+
+    class Meta:
+        model = Inventory
+        fields = (
+            "id",
+            "product_id",
+            "product_name",
+            "product_sku",
+            "stock_quantity",
+            "reserved_quantity",
+            "available_quantity",
+            "low_stock_threshold",
+            "is_low_stock",
+            "is_out_of_stock",
+            "updated_at",
+        )
+
+
+class InventoryAdjustSerializer(serializers.Serializer):
+    quantity_change = serializers.IntegerField()
+    reason = serializers.ChoiceField(
+        choices=[
+            InventoryTransaction.Reason.ADJUSTMENT,
+            InventoryTransaction.Reason.PURCHASE,
+            InventoryTransaction.Reason.RETURN,
+        ],
+        default=InventoryTransaction.Reason.ADJUSTMENT,
+    )
+    reference = serializers.CharField(
+        max_length=100, required=False, allow_blank=True
+    )
+
+    def validate_quantity_change(self, value):
+        if value == 0:
+            raise serializers.ValidationError("Quantity change cannot be zero.")
+        return value
+
+
+class InventoryTransactionSerializer(serializers.ModelSerializer):
+    admin_name = serializers.CharField(source="admin_user.name", read_only=True)
+
+    class Meta:
+        model = InventoryTransaction
+        fields = (
+            "id",
+            "product_id",
+            "quantity_change",
+            "reason",
+            "reference",
+            "admin_name",
+            "created_at",
+        )

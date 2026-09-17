@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import HomepageSection
+from .models import HomepageSection, SiteSetting
 from .services import section_payload
 
 
@@ -47,3 +47,30 @@ class HomeSectionAdminSerializer(serializers.ModelSerializer):
 
 class HomeSectionReorderSerializer(serializers.Serializer):
     ids = serializers.ListField(child=serializers.IntegerField())
+
+
+class SiteSettingSerializer(serializers.ModelSerializer):
+    """Admin key/value store management shape (Phase 12)."""
+
+    class Meta:
+        model = SiteSetting
+        fields = (
+            "id",
+            "key",
+            "value",
+            "group",
+            "created_at",
+            "updated_at",
+        )
+        read_only_fields = ("id", "created_at", "updated_at")
+
+    def validate_key(self, value):
+        value = (value or "").strip()
+        if not value:
+            raise serializers.ValidationError("Setting key is required.")
+        queryset = SiteSetting.objects.filter(key=value)
+        if self.instance is not None:
+            queryset = queryset.exclude(pk=self.instance.pk)
+        if queryset.exists():
+            raise serializers.ValidationError("A setting with this key already exists.")
+        return value

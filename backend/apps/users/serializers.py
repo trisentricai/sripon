@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Address, DeviceToken, UserProfile
+from .models import Address, AdminUser, DeviceToken, UserProfile
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -69,4 +69,67 @@ class DeviceTokenSerializer(serializers.ModelSerializer):
     def validate_token(self, value):
         if not value or len(value) > 256:
             raise serializers.ValidationError("A valid device token is required.")
+        return value
+
+
+class CustomerAdminSerializer(serializers.ModelSerializer):
+    """Admin view of a customer with rolled-up order metrics (Phase 12)."""
+
+    order_count = serializers.IntegerField(read_only=True, default=0)
+    total_spent = serializers.DecimalField(
+        max_digits=12, decimal_places=2, read_only=True, default=0
+    )
+
+    class Meta:
+        model = UserProfile
+        fields = (
+            "id",
+            "firebase_uid",
+            "name",
+            "email",
+            "phone",
+            "profile_image",
+            "active",
+            "order_count",
+            "total_spent",
+            "created_at",
+            "updated_at",
+        )
+        read_only_fields = (
+            "id",
+            "firebase_uid",
+            "order_count",
+            "total_spent",
+            "created_at",
+            "updated_at",
+        )
+
+
+class AdminUserSerializer(serializers.ModelSerializer):
+    """Admin-user management shape (Phase 12, SUPER_ADMIN only)."""
+
+    class Meta:
+        model = AdminUser
+        fields = (
+            "id",
+            "supabase_uid",
+            "email",
+            "name",
+            "role",
+            "active",
+            "last_login",
+            "created_at",
+            "updated_at",
+        )
+        read_only_fields = ("id", "last_login", "created_at", "updated_at")
+
+    def validate_email(self, value):
+        value = (value or "").strip().lower()
+        if not value:
+            raise serializers.ValidationError("Email is required.")
+        queryset = AdminUser.objects.filter(email=value)
+        if self.instance is not None:
+            queryset = queryset.exclude(pk=self.instance.pk)
+        if queryset.exists():
+            raise serializers.ValidationError("An admin with this email already exists.")
         return value

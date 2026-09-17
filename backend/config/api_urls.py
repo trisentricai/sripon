@@ -32,6 +32,12 @@ urlpatterns = [
     # Homepage CMS (Phase 10)
     path("home/", include("apps.settings.api_urls")),
     path("admin/home/", include("apps.settings.admin_api_urls")),
-    # Cross-domain and admin endpoints appear here as phases ship:
-    # path("admin/", include("apps.settings.admin_api_urls")),
+    # Admin catalogue management (Phase 12)
+    path("admin/inventory/", include("apps.products.inventory_api_urls")),
+    path("admin/categories/", include("apps.categories.admin_api_urls")),
+    path("admin/coupons/", include("apps.coupons.admin_api_urls")),
+    path("admin/settings/", include("apps.settings.admin_settings_urls")),
+    # Admin dashboard, analytics, customers & admin users (Phase 12)
+    path("admin/", include("apps.analytics.urls")),
+    path("admin/", include("apps.users.admin_api_urls")),
 ]
