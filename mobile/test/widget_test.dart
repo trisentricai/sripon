@@ -12,10 +12,25 @@ void main() {
     expect(find.text('Search'), findsWidgets);
     expect(find.text('Cart'), findsWidgets);
     expect(find.text('Profile'), findsWidgets);
+  });
 
-    // Switching tabs changes the visible screen.
-    await tester.tap(find.text('Cart'));
-    await tester.pumpAndSettle();
-    expect(find.text('Your cart and quantities appear here.'), findsOneWidget);
+  testWidgets('navigating between tabs swaps the visible screen', (
+      tester) async {
+    await tester.pumpWidget(const SriPonApp());
+
+    const expectations = <String, String>{
+      'Cart': 'Your cart and quantities appear here.',
+      'Profile': 'Account, orders, addresses and settings land here.',
+      'Search': 'Search products, filters and suggestions land here.',
+      'Categories': 'Nested cracker categories render here from the API.',
+      'Home': 'Hero banners, featured products and offers load here from the API.',
+    };
+
+    for (final entry in expectations.entries) {
+      await tester.tap(find.text(entry.key));
+      await tester.pumpAndSettle();
+      expect(find.text(entry.value), findsOneWidget,
+          reason: 'Expected ${entry.key} tab to show its placeholder.');
+    }
   });
 }
