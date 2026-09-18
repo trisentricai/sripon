@@ -9,7 +9,7 @@ services:
     runtime: python
     rootDir: backend
     plan: starter
-    buildCommand: pip install -r requirements.txt
+    buildCommand: PIP_PREFER_BINARY=1 pip install -r requirements.txt
     startCommand: gunicorn config.wsgi:application --workers 2 --timeout 120 --bind 0.0.0.0:$PORT
     preDeployCommand: python manage.py migrate --noinput && python manage.py collectstatic --noinput
     healthCheckPath: /health/
@@ -55,6 +55,10 @@ services:
         value: sripon
       - key: PAYMENT_PROVIDER
         value: MOCK
+      - key: PIP_PREFER_BINARY
+        value: "1"
+      - key: PIP_NO_BUILD_ISOLATION
+        value: "0"
 
   - type: redis
     name: sripon-redis
