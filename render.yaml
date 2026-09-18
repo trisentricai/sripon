@@ -60,3 +60,4 @@ services:
     name: sripon-redis
     plan: free
     maxmemoryPolicy: allkeys-lru
+    ipAllowList: []
