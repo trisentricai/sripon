@@ -11,8 +11,9 @@ services:
     plan: free # 512 MB, sleeps after ~15 min of no traffic (cold start on wake)
     autoDeploy: true
     buildCommand: npm --prefix ../admin ci && npm --prefix ../admin run build && python -m pip install --upgrade pip && pip install -r requirements.txt
-    startCommand: gunicorn config.wsgi:application --workers 1 --threads 4 --timeout 120 --bind 0.0.0.0:$PORT
-    preDeployCommand: python manage.py migrate --noinput && python manage.py collectstatic --noinput
+    # Free tier can't use preDeployCommand, so migrations + static files run
+    # at boot (startCommand) before gunicorn serves traffic.
+    startCommand: python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn config.wsgi:application --workers 1 --threads 4 --timeout 120 --bind 0.0.0.0:$PORT
     healthCheckPath: /health/
     envVars:
       - key: DJANGO_SETTINGS_MODULE
