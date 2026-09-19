@@ -49,6 +49,13 @@ services:
         sync: false # e.g. https://<project>.supabase.co/auth/v1/.well-known/jwks.json
       - key: SUPABASE_JWT_SECRET
         sync: false # legacy shared secret; only used when SUPABASE_JWKS_URL is blank
+      # Admin SPA build-time env (inlined by Vite during npm run build):
+      - key: VITE_SUPABASE_URL
+        sync: false # same value as SUPABASE_URL (admin auth)
+      - key: VITE_SUPABASE_ANON_KEY
+        sync: false # same value as SUPABASE_PUBLISHABLE_KEY
+      - key: VITE_API_BASE_URL
+        value: /api/v1
       - key: CLOUDINARY_CLOUD_NAME
         sync: false
       - key: CLOUDINARY_API_KEY
