@@ -9,7 +9,11 @@ import {
 } from "react";
 import { getSupabase } from "../../services/supabase";
 import { isSupabaseConfigured } from "../../config/env";
-import { setAccessToken } from "../../services/session-token";
+import {
+  registerUnauthorizedHandler,
+  setAccessToken,
+} from "../../services/session-token";
+import { adminFetch } from "../../services/admin-api";
 
 /** Public-ish projection of the Supabase session used across pages. */
 export interface AdminSession {
@@ -18,9 +22,21 @@ export interface AdminSession {
   name?: string;
 }
 
+/** Admin identity + role permissions fetched from /auth/admin/verify/. */
+export interface AdminMe {
+  id: number;
+  email: string;
+  name: string;
+  role: string;
+  active: boolean;
+  permissions: string[];
+}
+
 export interface AdminAuthState {
   session: AdminSession | null;
+  me: AdminMe | null;
   loading: boolean;
+  meLoading: boolean;
   error: string | null;
 }
 
@@ -28,6 +44,8 @@ interface AdminAuthContextValue extends AdminAuthState {
   signIn: (email: string, password: string) => Promise<boolean>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<boolean>;
+  hasPermission: (code: string) => boolean;
+  isSuperAdmin: boolean;
 }
 
 const AdminAuthContext = createContext<AdminAuthContextValue | null>(null);
@@ -48,17 +66,23 @@ const toSession = (session: Session | null): AdminSession | null => {
  * Wraps the Supabase admin session lifecycle.
  *
  * - Loads the persisted session on mount and keeps it in React state.
+ * - Fetches the admin identity + role permissions (`/auth/admin/verify/`).
  * - Mirrors the raw access token into the module-level token holder so every
- *   API request (fetch + axios) can attach `Authorization: Bearer <token>`.
- * - Exposes sign-in / sign-out / password-reset helpers.
+ *   API request can attach `Authorization: Bearer <token>`.
+ * - Registers the global 401 handler: an expired/rejected token signs the
+ *   session out so `RequireAuth` bounces to the login screen.
  *
  * When Supabase is not configured (local scaffold without env vars) the
  * provider renders as "signed out" without erroring.
  */
 export function AdminAuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<AdminSession | null>(null);
+  const [me, setMe] = useState<AdminMe | null>(null);
+  const [meLoading, setMeLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const sessionId = session?.id ?? null;
 
   useEffect(() => {
     let active = true;
@@ -68,6 +92,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
       return () => {
         active = false;
+        registerUnauthorizedHandler(null);
       };
     }
 
@@ -78,6 +103,13 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
       setSession(toSession(nextSession));
       setLoading(stillLoading);
     };
+
+    const handleUnauthorized = () => {
+      setAccessToken(null);
+      setMe(null);
+      void supabase.auth.signOut();
+    };
+    registerUnauthorizedHandler(handleUnauthorized);
 
     supabase.auth
       .getSession()
@@ -100,8 +132,32 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     return () => {
       active = false;
       subscription.unsubscribe();
+      registerUnauthorizedHandler(null);
     };
   }, []);
+
+  useEffect(() => {
+    if (!sessionId) {
+      setMe(null);
+      setMeLoading(false);
+      return;
+    }
+    let active = true;
+    setMeLoading(true);
+    adminFetch<{ data: AdminMe }>("/auth/admin/verify/")
+      .then((res) => {
+        if (active) setMe(res.data);
+      })
+      .catch(() => {
+        if (active) setMe(null);
+      })
+      .finally(() => {
+        if (active) setMeLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [sessionId]);
 
   const signIn = useCallback(async (email: string, password: string) => {
     if (!isSupabaseConfigured()) {
@@ -122,6 +178,8 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = useCallback(async () => {
     setError(null);
+    setAccessToken(null);
+    setMe(null);
     if (isSupabaseConfigured()) {
       await getSupabase().auth.signOut();
     }
@@ -144,9 +202,25 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     return true;
   }, []);
 
+  const hasPermission = useCallback(
+    (code: string) => (me?.permissions?.includes(code) ?? false),
+    [me],
+  );
+
   return (
     <AdminAuthContext.Provider
-      value={{ session, loading, error, signIn, signOut, resetPassword }}
+      value={{
+        session,
+        me,
+        loading,
+        meLoading,
+        error,
+        signIn,
+        signOut,
+        resetPassword,
+        hasPermission,
+        isSuperAdmin: me?.role === "SUPER_ADMIN",
+      }}
     >
       {children}
     </AdminAuthContext.Provider>

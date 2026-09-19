@@ -150,3 +150,43 @@ export function PrimaryButton({ children, ...props }: React.ButtonHTMLAttributes
 export function GhostButton({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return <button {...props} className={`btn btn-ghost ${props.className ?? ""}`}>{children}</button>;
 }
+
+export function Modal({
+  title,
+  onClose,
+  children,
+  wide = false,
+}: {
+  title: string;
+  onClose: () => void;
+  children: React.ReactNode;
+  wide?: boolean;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4" role="dialog" aria-modal="true">
+      <div className={`w-full ${wide ? "max-w-3xl" : "max-w-lg"} max-h-[90vh] overflow-y-auto rounded-card border border-ink-soft/10 bg-surface shadow-lg`}>
+        <div className="flex items-center justify-between border-b border-ink-soft/10 px-5 py-3">
+          <h2 className="font-display text-base font-bold">{title}</h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-btn p-1.5 text-ink-faint hover:bg-ink/5"
+            aria-label="Close"
+          >
+            ×
+          </button>
+        </div>
+        <div className="p-5">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+/** Convert a backend ISO datetime to the value an <input type="datetime-local"> expects. */
+export function toLocalDateTime(iso?: string | null): string {
+  if (!iso) return "";
+  const parsed = new Date(iso);
+  if (Number.isNaN(parsed.getTime())) return "";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${parsed.getFullYear()}-${pad(parsed.getMonth() + 1)}-${pad(parsed.getDate())}T${pad(parsed.getHours())}:${pad(parsed.getMinutes())}`;
+}

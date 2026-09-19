@@ -41,7 +41,7 @@ export function Component() {
                   className="border-b border-ink-soft/5 hover:bg-ink/[0.03]"
                 >
                   <td className="px-3 py-2.5">
-                    <Link to={`/admin/products/${p.id}`} className="font-medium text-brand-600 hover:text-brand-700">
+                    <Link to={`/products/${p.id}`} className="font-medium text-brand-600 hover:text-brand-700">
                       {p.name}
                     </Link>
                   </td>

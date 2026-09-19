@@ -32,7 +32,7 @@ export function Component() {
               {data.map((o) => (
                 <tr key={o.id} className="border-b border-ink-soft/5 hover:bg-ink/[0.03]">
                   <td className="px-3 py-2.5">
-                    <Link to={`/admin/orders/${o.id}`} className="font-mono text-xs font-semibold text-brand-600 hover:text-brand-700">
+                    <Link to={`/orders/${o.id}`} className="font-mono text-xs font-semibold text-brand-600 hover:text-brand-700">
                       {o.order_number}
                     </Link>
                   </td>

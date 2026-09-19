@@ -57,10 +57,6 @@ function JsonInput({
   );
   const [invalid, setInvalid] = useState(false);
 
-  useEffect(() => {
-    setText(value === undefined ? "" : JSON.stringify(value, null, 2));
-  }, [value]);
-
   const handleBlur = () => {
     if (!text.trim()) {
       onChange({});
@@ -436,6 +432,7 @@ export function Component() {
                 </div>
                 <div className="sm:col-span-2">
                   <JsonInput
+                    key={`image-${editing?.id ?? "new"}`}
                     label="Image"
                     value={form.image}
                     onChange={(next) => setForm((prev) => ({ ...prev, image: next }))}
@@ -443,6 +440,7 @@ export function Component() {
                 </div>
                 <div className="sm:col-span-2">
                   <JsonInput
+                    key={`banner-${editing?.id ?? "new"}`}
                     label="Banner"
                     value={form.banner}
                     onChange={(next) => setForm((prev) => ({ ...prev, banner: next }))}

@@ -93,10 +93,6 @@ function JsonInput({
   );
   const [invalid, setInvalid] = useState(false);
 
-  useEffect(() => {
-    setText(value === undefined ? "" : JSON.stringify(value, null, 2));
-  }, [value]);
-
   const handleBlur = () => {
     if (!text.trim()) {
       onChange({});
@@ -208,7 +204,10 @@ export function Component() {
     setForm((prev) => ({ ...prev, [key]: value }));
 
   const pendingRef = useRef(pending);
-  pendingRef.current = pending;
+
+  useEffect(() => {
+    pendingRef.current = pending;
+  }, [pending]);
 
   useEffect(
     () => () => {
@@ -544,18 +543,21 @@ export function Component() {
           <h2 className="font-display text-lg font-bold">Rich content</h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <JsonInput
+              key={`specifications-${id ?? "new"}`}
               label="Specifications"
               hint="Key/value pairs"
               value={form.specifications}
               onChange={(next) => setField("specifications", next)}
             />
             <JsonInput
+              key={`highlights-${id ?? "new"}`}
               label="Highlights"
               hint="Array of strings"
               value={form.highlights}
               onChange={(next) => setField("highlights", next)}
             />
             <JsonInput
+              key={`meta-${id ?? "new"}`}
               label="Meta"
               hint="Optional metadata map"
               value={form.meta}

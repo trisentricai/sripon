@@ -242,7 +242,7 @@ export function Component() {
                   <td className="py-2.5">
                     {item.product?.id ? (
                       <Link
-                        to={`/admin/products/${item.product.id}`}
+                        to={`/products/${item.product.id}`}
                         className="font-medium text-brand-600 hover:text-brand-700"
                       >
                         {item.name}

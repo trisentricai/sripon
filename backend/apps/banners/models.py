@@ -117,3 +117,93 @@ class BannerImage(models.Model):
 
     def __str__(self):
         return f"{self.banner} ({self.variant})"
+
+
+class Poster(TimeStampedModel):
+    """Dedicated promotional poster, distinct from homepage banners.
+
+    Posters are standalone marketing creatives (e.g. festival offers, brand
+    campaigns) that the customer app surfaces outside the homepage
+    banner placements.
+    """
+
+    class CtaAction(models.TextChoices):
+        NONE = "NONE", "No Action"
+        PRODUCT = "PRODUCT", "Link to Product"
+        CATEGORY = "CATEGORY", "Link to Category"
+        URL = "URL", "Custom URL"
+
+    title = models.CharField(max_length=255, blank=True)
+    subtitle = models.CharField(max_length=512, blank=True)
+    cta_text = models.CharField(max_length=40, blank=True)
+    cta_action = models.CharField(
+        max_length=20,
+        choices=CtaAction.choices,
+        default=CtaAction.NONE,
+    )
+    custom_url = models.URLField(blank=True)
+    link_product = models.ForeignKey(
+        Product,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="linked_posters",
+    )
+    link_category = models.ForeignKey(
+        Category,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="linked_posters",
+    )
+    display_priority = models.PositiveIntegerField(default=0)
+    start_date = models.DateTimeField(null=True, blank=True)
+    end_date = models.DateTimeField(null=True, blank=True)
+    active = models.BooleanField(default=True, db_index=True)
+    manager = models.ForeignKey(
+        AdminUser,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="managed_posters",
+    )
+
+    class Meta:
+        ordering = ["display_priority", "created_at"]
+        indexes = [models.Index(fields=["active"])]
+
+    def __str__(self):
+        return self.title or f"Poster {self.pk}"
+
+
+class PosterImage(models.Model):
+    """Variant artwork for a poster: desktop or mobile."""
+
+    class Variant(models.TextChoices):
+        DESKTOP = "DESKTOP", "Desktop"
+        MOBILE = "MOBILE", "Mobile"
+
+    poster = models.ForeignKey(
+        Poster,
+        on_delete=models.CASCADE,
+        related_name="images",
+    )
+    variant = models.CharField(max_length=20, choices=Variant.choices)
+    public_id = models.CharField(max_length=200)
+    secure_url = models.CharField(max_length=500)
+    width = models.PositiveIntegerField(null=True, blank=True)
+    height = models.PositiveIntegerField(null=True, blank=True)
+    alt_text = models.CharField(max_length=255, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["id"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["poster", "variant"],
+                name="uniq_poster_variant",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.poster} ({self.variant})"

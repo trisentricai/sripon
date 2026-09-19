@@ -12,7 +12,7 @@ from django.utils import timezone
 
 from apps.common import storage
 
-from .models import Banner, BannerImage
+from .models import Banner, BannerImage, Poster, PosterImage
 
 
 def upload_banner_image(
@@ -123,3 +123,59 @@ def live_banners(placement: str = ""):
 
 def _variant_holder(banner: Banner, variant: str) -> BannerImage | None:
     return banner.images.filter(variant=variant).first()
+
+
+def upload_poster_image(
+    poster, variant: str, image: BinaryIO, alt_text: str = ""
+):
+    """Upload (or replace) a poster variant image on Cloudinary."""
+    if variant not in PosterImage.Variant.values:
+        raise ValueError(f"Unknown poster variant: {variant}")
+
+    holder = poster.images.filter(variant=variant).first()
+    previous_public_id = holder.public_id if holder is not None else None
+
+    payload = storage.upload_image(
+        image,
+        folder=storage.default_folder("posters"),
+        tags=["poster", str(poster.pk)],
+    )
+
+    with transaction.atomic():
+        poster_image, _ = PosterImage.objects.update_or_create(
+            poster=poster,
+            variant=variant,
+            defaults={
+                "public_id": payload["public_id"],
+                "secure_url": payload["secure_url"],
+                "width": payload.get("width"),
+                "height": payload.get("height"),
+                "alt_text": alt_text,
+            },
+        )
+
+    if previous_public_id and previous_public_id != payload["public_id"]:
+        storage.delete_image(previous_public_id)
+
+    return poster_image
+
+
+def delete_poster_image(poster, variant: str) -> bool:
+    """Remove one poster variant record and its Cloudinary asset."""
+    holder = poster.images.filter(variant=variant).first()
+    if holder is None:
+        return False
+    public_id = holder.public_id
+    with transaction.atomic():
+        holder.delete()
+    storage.delete_image(public_id)
+    return True
+
+
+def delete_poster(poster) -> None:
+    """Delete a poster and destroy every variant's Cloudinary asset."""
+    public_ids = list(poster.images.values_list("public_id", flat=True))
+    with transaction.atomic():
+        poster.delete()
+    for public_id in public_ids:
+        storage.delete_image(public_id)

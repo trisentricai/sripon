@@ -17,6 +17,7 @@ from .authentication import (
     sync_user_from_firebase_claims,
 )
 from .models import Address, AdminUser, DeviceToken
+from .permissions import ROLE_PERMISSIONS
 from .serializers import (
     AddressSerializer,
     AuthTokenSerializer,
@@ -79,6 +80,7 @@ class AdminAuthView(APIView):
                 "name": admin.name,
                 "role": admin.role,
                 "active": admin.active,
+                "permissions": sorted(ROLE_PERMISSIONS.get(admin.role, set())),
             },
             message=f"Authenticated as {admin.name}.",
         )

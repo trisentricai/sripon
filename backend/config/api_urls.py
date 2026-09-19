@@ -29,6 +29,7 @@ urlpatterns = [
     # Banners & posters (Phase 9)
     path("banners/", include("apps.banners.api_urls")),
     path("admin/banners/", include("apps.banners.admin_api_urls")),
+    path("admin/posters/", include("apps.banners.poster_api_urls")),
     # Homepage CMS (Phase 10)
     path("home/", include("apps.settings.api_urls")),
     path("admin/home/", include("apps.settings.admin_api_urls")),
