@@ -8,9 +8,10 @@ services:
     name: sripon-api
     runtime: python
     rootDir: backend
-    plan: starter
+    plan: free # 512 MB, sleeps after ~15 min of no traffic (cold start on wake)
+    autoDeploy: true
     buildCommand: npm --prefix ../admin ci && npm --prefix ../admin run build && python -m pip install --upgrade pip && pip install -r requirements.txt
-    startCommand: gunicorn config.wsgi:application --workers 2 --timeout 120 --bind 0.0.0.0:$PORT
+    startCommand: gunicorn config.wsgi:application --workers 1 --threads 4 --timeout 120 --bind 0.0.0.0:$PORT
     preDeployCommand: python manage.py migrate --noinput && python manage.py collectstatic --noinput
     healthCheckPath: /health/
     envVars:
