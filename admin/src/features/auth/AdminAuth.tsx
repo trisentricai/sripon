@@ -106,8 +106,12 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
 
     const handleUnauthorized = () => {
       setAccessToken(null);
+      setSession(null);
       setMe(null);
-      void supabase.auth.signOut();
+      setLoading(false);
+      // Best-effort remote sign-out: a stale/expired session can make the
+      // Supabase logout call fail, so local state is cleared regardless.
+      void supabase.auth.signOut().catch(() => {});
     };
     registerUnauthorizedHandler(handleUnauthorized);
 
