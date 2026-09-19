@@ -353,6 +353,105 @@ class AuthenticationDispatcherTests(TestCase):
         self.assertIsNone(helper.get_bearer_token(other))
 
 
+class SupabaseES256DecodeTests(TestCase):
+    """Regression: current Supabase projects sign admin JWTs with ES256 (EC P-256)."""
+
+    def setUp(self):
+        from cryptography.hazmat.primitives.asymmetric import ec
+
+        self.private_key = ec.generate_private_key(ec.SECP256R1())
+
+    @staticmethod
+    def _b64url(value: bytes) -> str:
+        import base64
+
+        return base64.urlsafe_b64encode(value).rstrip(b"=").decode()
+
+    def _fake_jwk(self):
+        from jwt import PyJWK
+
+        numbers = self.private_key.public_key().public_numbers()
+        jwk_data = {
+            "kty": "EC",
+            "crv": "P-256",
+            "kid": "es256-test-1",
+            "use": "sig",
+            "alg": "ES256",
+            "x": self._b64url(numbers.x.to_bytes(32, "big")),
+            "y": self._b64url(numbers.y.to_bytes(32, "big")),
+        }
+        return PyJWK.from_dict(jwk_data)
+
+    @staticmethod
+    def _fake_client(jwk):
+        class _FakeClient:
+            def get_signing_key_from_jwt(self, token):
+                return jwk
+
+        return _FakeClient()
+
+    @override_settings(
+        SUPABASE={**SUPABASE_SETTINGS, "JWKS_URL": "https://test.supabase.co/jwks.json"}
+    )
+    def test_es256_token_verifies_via_jwks(self):
+        from apps.users.authentication import _decode_supabase_token
+
+        now = timezone.now()
+        token = pyjwt.encode(
+            {
+                "sub": "ec-admin-1",
+                "email": "ec@sripon.in",
+                "role": "authenticated",
+                "aud": "authenticated",
+                "iss": "https://test.supabase.co/auth/v1",
+                "iat": now,
+                "exp": now + timedelta(hours=1),
+            },
+            self.private_key,
+            algorithm="ES256",
+            headers={"kid": "es256-test-1"},
+        )
+        jwk = self._fake_jwk()
+        client = self._fake_client(jwk)
+        with patch("apps.users.authentication.pyjwt.PyJWKClient", return_value=client):
+            claims = _decode_supabase_token(token)
+        self.assertEqual(claims["sub"], "ec-admin-1")
+
+    @override_settings(
+        SUPABASE={
+            **SUPABASE_SETTINGS,
+            "JWKS_URL": "https://test.supabase.co/jwks.json",
+        }
+    )
+    def test_es256_token_syncs_admin_role(self):
+        now = timezone.now()
+        token = pyjwt.encode(
+            {
+                "sub": "ec-admin-2",
+                "email": "ec2@sripon.in",
+                "role": "authenticated",
+                "aud": "authenticated",
+                "iss": "https://test.supabase.co/auth/v1",
+                "iat": now,
+                "exp": now + timedelta(hours=1),
+                "app_metadata": {"sripon_role": "ADMIN"},
+                "user_metadata": {"name": "EC Admin"},
+            },
+            self.private_key,
+            algorithm="ES256",
+            headers={"kid": "es256-test-1"},
+        )
+        jwk = self._fake_jwk()
+        client = self._fake_client(jwk)
+        with patch("apps.users.authentication.pyjwt.PyJWKClient", return_value=client):
+            response = self.client.get(
+                "/api/v1/auth/admin/verify/",
+                HTTP_AUTHORIZATION=f"Bearer {token}",
+            )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(AdminUser.objects.filter(supabase_uid="ec-admin-2").exists())
+
+
 class SyncHelperTests(TestCase):
     def test_sync_creates_then_updates(self):
         profile, created = sync_user_from_firebase_claims(

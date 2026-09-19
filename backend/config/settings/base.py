@@ -268,6 +268,10 @@ CSRF_COOKIE_HTTPONLY = True
 # ---------------------------------------------------------------------------
 
 STATIC_URL = "/static/"
+
+# Built admin dashboard (admin/ Vite build output). Django serves the SPA and
+# its assets under the /admin-portal/ URL prefix.
+ADMIN_PORTAL_DIR = BASE_DIR / "admin_portal"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
@@ -302,10 +306,17 @@ FIREBASE = {
 
 SUPABASE = {
     "URL": os.getenv("SUPABASE_URL", ""),
-    "ANON_KEY": os.getenv("SUPABASE_ANON_KEY", ""),
-    "SERVICE_ROLE_KEY": os.getenv("SUPABASE_SERVICE_ROLE_KEY", ""),
+    "ANON_KEY": os.getenv(
+        "SUPABASE_ANON_KEY",
+        os.getenv("SUPABASE_PUBLISHABLE_KEY", ""),
+    ),
+    "SERVICE_ROLE_KEY": os.getenv(
+        "SUPABASE_SERVICE_ROLE_KEY",
+        os.getenv("SUPABASE_SECRET_KEY", ""),
+    ),
     "JWT_SECRET": os.getenv("SUPABASE_JWT_SECRET", ""),
     "JWT_AUDIENCE": os.getenv("SUPABASE_JWT_AUDIENCE", "authenticated"),
+    "JWKS_URL": os.getenv("SUPABASE_JWKS_URL", ""),
 }
 
 # ---------------------------------------------------------------------------

@@ -18,16 +18,6 @@ interface WebEnv {
   enablePhoneAuth: boolean;
 }
 
-/** The full Firebase config object built from individual env vars. */
-export const firebaseConfig = {
-  apiKey: read("VITE_FIREBASE_API_KEY"),
-  authDomain: read("VITE_FIREBASE_AUTH_DOMAIN"),
-  projectId: read("VITE_FIREBASE_PROJECT_ID"),
-  storageBucket: read("VITE_FIREBASE_STORAGE_BUCKET"),
-  messagingSenderId: read("VITE_FIREBASE_MESSAGING_SENDER_ID"),
-  appId: read("VITE_FIREBASE_APP_ID"),
-};
-
 const read = (key: string): string | undefined => {
   const value = import.meta.env[key];
   return typeof value === "string" && value.length > 0 ? value : undefined;
@@ -37,6 +27,16 @@ const readFlag = (key: string, fallback = false): boolean => {
   const value = read(key);
   if (value === undefined) return fallback;
   return ["1", "true", "yes", "on"].includes(value.toLowerCase());
+};
+
+/** The full Firebase config object built from individual env vars. */
+export const firebaseConfig = {
+  apiKey: read("VITE_FIREBASE_API_KEY"),
+  authDomain: read("VITE_FIREBASE_AUTH_DOMAIN"),
+  projectId: read("VITE_FIREBASE_PROJECT_ID"),
+  storageBucket: read("VITE_FIREBASE_STORAGE_BUCKET"),
+  messagingSenderId: read("VITE_FIREBASE_MESSAGING_SENDER_ID"),
+  appId: read("VITE_FIREBASE_APP_ID"),
 };
 
 export const env: WebEnv = {

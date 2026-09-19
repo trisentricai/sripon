@@ -43,6 +43,11 @@
   --color-paper: #f6f4f1;
   --color-surface: #ffffff;
 
+  /* Semantic status colours */
+  --color-error: #c2102e;
+  --color-success: #1a7f37;
+  --color-warning: #b45309;
+
   --radius-card: 0.875rem;
   --radius-btn: 0.625rem;
   --radius-pill: 9999px;

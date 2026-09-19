@@ -25,11 +25,18 @@ class DatabaseUrlConfigTests(SimpleTestCase):
         self.assertEqual(config["CONN_MAX_AGE"], 600)
         self.assertEqual(config["OPTIONS"]["sslmode"], "require")
 
-    def test_development_falls_back_to_sqlite(self):
-        self.assertEqual(
-            settings.DATABASES["default"]["ENGINE"],
-            "django.db.backends.sqlite3",
-        )
+    def test_development_database_selection(self):
+        """SQLite is the zero-config fallback; DATABASE_URL selects Postgres."""
+        if os.getenv("DATABASE_URL"):
+            self.assertEqual(
+                settings.DATABASES["default"]["ENGINE"],
+                "django.db.backends.postgresql",
+            )
+        else:
+            self.assertEqual(
+                settings.DATABASES["default"]["ENGINE"],
+                "django.db.backends.sqlite3",
+            )
 
 
 class EnvHelperTests(SimpleTestCase):

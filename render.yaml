@@ -9,7 +9,7 @@ services:
     runtime: python
     rootDir: backend
     plan: starter
-    buildCommand: PIP_PREFER_BINARY=1 pip install -r requirements.txt
+    buildCommand: npm --prefix ../admin ci && npm --prefix ../admin run build && python -m pip install --upgrade pip && pip install -r requirements.txt
     startCommand: gunicorn config.wsgi:application --workers 2 --timeout 120 --bind 0.0.0.0:$PORT
     preDeployCommand: python manage.py migrate --noinput && python manage.py collectstatic --noinput
     healthCheckPath: /health/
@@ -39,12 +39,14 @@ services:
         sync: false
       - key: SUPABASE_URL
         sync: false
-      - key: SUPABASE_ANON_KEY
-        sync: false
-      - key: SUPABASE_SERVICE_ROLE_KEY
-        sync: false
+      - key: SUPABASE_PUBLISHABLE_KEY
+        sync: false # anon / publishable key
+      - key: SUPABASE_SECRET_KEY
+        sync: false # service role key (backend only)
+      - key: SUPABASE_JWKS_URL
+        sync: false # e.g. https://<project>.supabase.co/auth/v1/.well-known/jwks.json
       - key: SUPABASE_JWT_SECRET
-        sync: false
+        sync: false # legacy shared secret; only used when SUPABASE_JWKS_URL is blank
       - key: CLOUDINARY_CLOUD_NAME
         sync: false
       - key: CLOUDINARY_API_KEY

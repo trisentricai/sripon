@@ -107,23 +107,44 @@ def sync_user_from_firebase_claims(claims: dict):
 
 
 def _decode_supabase_token(token: str) -> dict:
-    """Decode and verify a Supabase JWT (HS256) with the configured secret."""
-    cfg = settings.SUPABASE
-    secret = cfg.get("JWT_SECRET", "")
-    if not secret:
-        raise AuthenticationConfigurationError(
-            "Supabase JWT secret is not configured."
-        )
+    """Decode and verify a Supabase JWT.
 
+    Verifies against the configured JWKS URL when available, accepting both
+    current Supabase signatures (ES256 / EC P-256) and legacy RS256 keys.
+    Falls back to HS256 with the legacy shared JWT secret only when no JWKS
+    URL is configured.
+    """
+    cfg = settings.SUPABASE
     audience = cfg.get("JWT_AUDIENCE") or None
+    decode_options = {"verify_aud": audience is not None}
+
+    jwks_url = (cfg.get("JWKS_URL") or "").strip()
+    secret = (cfg.get("JWT_SECRET") or "").strip()
+
     try:
-        claims = pyjwt.decode(
-            token,
-            secret,
-            algorithms=["HS256"],
-            audience=audience,
-            options={"verify_aud": audience is not None},
-        )
+        if jwks_url:
+            signing_key = pyjwt.PyJWKClient(jwks_url).get_signing_key_from_jwt(
+                token
+            )
+            claims = pyjwt.decode(
+                token,
+                signing_key.key,
+                algorithms=[signing_key.algorithm_name],
+                audience=audience,
+                options=decode_options,
+            )
+        else:
+            if not secret:
+                raise AuthenticationConfigurationError(
+                    "Supabase JWT secret is not configured."
+                )
+            claims = pyjwt.decode(
+                token,
+                secret,
+                algorithms=["HS256"],
+                audience=audience,
+                options=decode_options,
+            )
     except pyjwt.InvalidTokenError as exc:
         logger.info("Supabase token verification failed")
         raise exceptions.AuthenticationFailed(

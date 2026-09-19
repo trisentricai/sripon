@@ -1,6 +1,7 @@
 import axios, { AxiosError } from "axios";
 import type { ApiError } from "../types/api";
 import { adminEnv } from "../config/env";
+import { getAccessToken } from "../services/session-token";
 
 /**
  * Centralised HTTP client for the SriPon REST API.
@@ -23,11 +24,9 @@ export function registerAuthProvider(provider: () => Promise<string | null>) {
 }
 
 client.interceptors.request.use(async (config) => {
-  if (onRequestAuth) {
-    const token = await onRequestAuth();
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+  const token = onRequestAuth ? await onRequestAuth() : getAccessToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });

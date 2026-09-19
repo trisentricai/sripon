@@ -1,42 +1,43 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { useAdminAuth } from "../features/auth/AdminAuth";
 
 /** Sidebar navigation mirroring the admin information architecture. */
 const navSections: { label: string; items: { to: string; label: string }[] }[] =
   [
     {
       label: "Overview",
-      items: [{ to: "/admin/dashboard", label: "Dashboard" }],
+      items: [{ to: "/dashboard", label: "Dashboard" }],
     },
     {
       label: "Catalogue",
       items: [
-        { to: "/admin/products", label: "Products" },
-        { to: "/admin/categories", label: "Categories" },
-        { to: "/admin/inventory", label: "Inventory" },
+        { to: "/products", label: "Products" },
+        { to: "/categories", label: "Categories" },
+        { to: "/inventory", label: "Inventory" },
       ],
     },
     {
       label: "Commerce",
       items: [
-        { to: "/admin/orders", label: "Orders" },
-        { to: "/admin/customers", label: "Customers" },
-        { to: "/admin/coupons", label: "Coupons" },
+        { to: "/orders", label: "Orders" },
+        { to: "/customers", label: "Customers" },
+        { to: "/coupons", label: "Coupons" },
       ],
     },
     {
       label: "Content",
       items: [
-        { to: "/admin/banners", label: "Banners" },
-        { to: "/admin/posters", label: "Posters" },
-        { to: "/admin/homepage", label: "Homepage" },
+        { to: "/banners", label: "Banners" },
+        { to: "/posters", label: "Posters" },
+        { to: "/homepage", label: "Homepage" },
       ],
     },
     {
       label: "System",
       items: [
-        { to: "/admin/analytics", label: "Analytics" },
-        { to: "/admin/settings", label: "Settings" },
-        { to: "/admin/admin-users", label: "Admin Users" },
+        { to: "/analytics", label: "Analytics" },
+        { to: "/settings", label: "Settings" },
+        { to: "/admin-users", label: "Admin Users" },
       ],
     },
   ];
@@ -46,6 +47,14 @@ const navSections: { label: string; items: { to: string; label: string }[] }[] =
  * shell establishes the final layout contract (sidebar, header, outlet).
  */
 export function AdminLayout() {
+  const { session, signOut } = useAdminAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/login", { replace: true });
+  };
+
   return (
     <div className="flex min-h-screen">
       <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-ink-soft/10 bg-surface md:flex">
@@ -69,7 +78,7 @@ export function AdminLayout() {
                   <li key={item.to}>
                     <NavLink
                       to={item.to}
-                      end={item.to === "/admin/dashboard"}
+                      end={item.to === "/dashboard"}
                       className={({ isActive }) =>
                         `block rounded-btn px-2.5 py-2 text-sm font-medium transition-colors ${
                           isActive
@@ -87,7 +96,11 @@ export function AdminLayout() {
           ))}
         </nav>
         <div className="border-t border-ink-soft/10 p-3">
-          <button type="button" className="btn-outline w-full py-2 text-sm">
+          <button
+            type="button"
+            onClick={handleSignOut}
+            className="btn-outline w-full py-2 text-sm"
+          >
             Sign out
           </button>
         </div>
@@ -97,7 +110,7 @@ export function AdminLayout() {
         <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-ink-soft/10 bg-surface/95 px-4 backdrop-blur sm:px-6">
           <p className="font-display font-semibold">Admin</p>
           <div className="flex items-center gap-3 text-sm text-ink-faint">
-            <span>Logged in as Admin</span>
+            <span>{session?.name ?? session?.email ?? "Admin"}</span>
           </div>
         </header>
         <main className="flex-1 p-4 sm:p-6">
